@@ -38,17 +38,18 @@ readImageFile = do
       let contents''' = snd $ B.splitAt 4 contents''
       let numberOfColumns = B.last $ fst $ B.splitAt 4 contents'''
       let contents'''' = snd $ B.splitAt 4 contents'''
-      return $ translatePixelsToMatrix contents'''' (fromIntegral numberOfRows) (fromIntegral numberOfColumns) []
+      return $ translatePixelsToMatrix contents'''' (fromIntegral numberOfRows) (fromIntegral numberOfColumns) [] 1
 
 
 
-translatePixelsToMatrix :: B.ByteString -> Int -> Int -> [Matrix Word8] -> [Matrix Word8]
-translatePixelsToMatrix bytes columns rows mat = do
-  let mat = matrix rows columns (\(i, j) -> (B.index bytes $ toEnum $ (i - 1) + (j - 1) * columns)) : mat
-  let contents = snd $ B.splitAt (toEnum (rows * columns)) bytes
+translatePixelsToMatrix :: B.ByteString -> Int -> Int -> [Matrix Word8] -> Int -> [Matrix Word8]
+translatePixelsToMatrix bytes columns rows mat it = do
+  let contents = B.drop (toEnum (rows * columns * it)) bytes
   if not $ B.null contents
-    then translatePixelsToMatrix contents rows columns mat
-    else mat
+      then do
+      let mat' = matrix rows columns (\(i, j) -> (B.index bytes $ toEnum $ ((i - 1) + (j - 1)*rows) + it*rows*columns )) : mat
+      translatePixelsToMatrix bytes rows columns mat' (it+1)
+  else mat
 
 
 

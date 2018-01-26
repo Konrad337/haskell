@@ -7,10 +7,12 @@ import Graphics.Gloss.Data.Color
 import Data.Matrix
 import Data.Word
 import Data.List
+import Graphics.Gloss.Interface.IO.Game
+import Graphics.Gloss.Interface.Environment
 
 
 printMatrix :: Int -> [Matrix Word8] -> IO ()
-printMatrix e mat = display (InWindow "Nice Window" (400, 400) (600, 300)) white (pictureMap $ mat !! e)
+printMatrix e mat =  play (InWindow "Nice Window" (800, 800) (600, 300)) white 4 (initWorld e mat 600 300) (\w -> worldPicture w) handle (\f w -> w)
 
 
 pictureMap :: Matrix Word8 -> Picture
@@ -19,10 +21,57 @@ pictureMap mat =
   map
     (\x ->
        color
-         (makeColorI (0) (snd x + 100) (snd x + 100) 255)
-         (polygon [(f x, s x),(f x + 10, s x),(f x, s x + 10),(f x + 10, s x + 10)]))
-    [((-i, -j), fromIntegral k) | i <- [1 .. (nrows mat)], j <- [1 .. (ncols mat)], k <- [getElem i j mat]]
+         (makeColorI (snd x + 90) (snd x + 90) (snd x + 90) 255)
+         (polygon [(f x, s x),(f x + 9, s x),(f x + 9, s x + 9),(f x , s x + 9)]))
+    [((i, -j), fromIntegral k) | i <- [1 .. (nrows mat)], j <- [1 .. (ncols mat)], k <- [getElem i j mat]]
 
 f x = 10 * fromIntegral (fst $ fst x)
-s x = 10 * fromIntegral (snd $ fst x)
+s x =  10 * fromIntegral (snd $ fst x)
+
+data World
+            = World
+            { worldPicture                  :: Picture
+            , pictureNumber                 :: Int
+            , worldPictureCollection        :: [Matrix Word8]
+            , worldPosX                     :: Float
+            , worldPosY                     :: Float
+
+            }
+
+
+initWorld :: Int -> [Matrix Word8] -> Float -> Float -> World
+initWorld e mat wx wy
+ = World
+        {
+         worldPictureCollection = mat,
+         pictureNumber = e,
+         worldPosX = wx,
+         worldPosY = wy,
+         worldPicture = translate wx wy $ pictureMap $ mat !! e
+        }
+
+
+handle :: Event -> World -> World
+handle event world
+
+        | EventKey (Char 'a') Down _ _ <- event
+        = initWorld (pictureNumber world - 1) (worldPictureCollection world) (worldPosX world) (worldPosY world)
+
+        | EventKey (Char 's') Down   _ _  <- event
+        = initWorld (pictureNumber world + 1) (worldPictureCollection world) (worldPosX world) (worldPosY world)
+
+        | EventKey (Char 'd') Down   _ _  <- event
+        = initWorld (pictureNumber world) (worldPictureCollection world) (worldPosX world + 50) (worldPosY world)
+
+        | EventKey (Char 'f') Down   _ _  <- event
+        = initWorld (pictureNumber world ) (worldPictureCollection world) (worldPosX world - 50) (worldPosY world)
+
+        | EventKey (Char 'x') Down   _ _  <- event
+        = initWorld (pictureNumber world) (worldPictureCollection world) (worldPosX world) (worldPosY world + 50)
+
+        | EventKey (Char 'c') Down   _ _  <- event
+        = initWorld (pictureNumber world ) (worldPictureCollection world) (worldPosX world) (worldPosY world - 50)
+
+        | otherwise
+        = world
 
