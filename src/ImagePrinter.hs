@@ -10,11 +10,11 @@ import Data.List
 import Graphics.Gloss.Interface.IO.Game
 import Graphics.Gloss.Interface.Environment
 
-
+-- displays matrix of pixels using gloss lib
 printMatrix :: Int -> [Matrix Word8] -> IO ()
-printMatrix e mat =  play (InWindow "Nice Window" (800, 800) (600, 300)) white 4 (initWorld e mat 600 300) (\w -> worldPicture w) handle (\f w -> w)
+printMatrix e mat =  play (InWindow "Nice Window" (800, 800) (300, 300)) white 4 (initWorld e mat 600 300) (\w -> worldPicture w) handle (\f w -> w)
 
-
+-- makes an image data for using with gloss, notice that all pixels will be displayed as black-white 9x9 square in 10x10 white square
 pictureMap :: Matrix Word8 -> Picture
 pictureMap mat =
   pictures $

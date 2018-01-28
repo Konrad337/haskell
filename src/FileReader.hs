@@ -17,11 +17,12 @@ getFileContents = B.readFile
 
 checkMagicNumber :: B.ByteString -> Bool
 checkMagicNumber bytesToCheck = bytesToCheck == B.pack [0x00, 0x00, 0x08, 0x03]
---returns True if 4 bytes match mn
 
 
 
 
+
+-- Performs parsing image data and returns it in list of matrices where every matrix corresponds to image
 readImageFile :: IO[Matrix Word8]
 readImageFile = do
   contents <- getFileContents imageFileSource
@@ -32,8 +33,8 @@ readImageFile = do
     then Prelude.putStrLn "Magic number not correct" >> return []
     else do
       Prelude.putStrLn "Magic number correct"
-      let numberOfImages = B.last $ fst $ B.splitAt 4 contents'
       let contents'' = snd $ B.splitAt 4 contents'
+      --skiping number of images since it will be awaiable under list size returned by translatePixelsToMatrix
       let numberOfRows = B.last $ fst $ B.splitAt 4 contents''
       let contents''' = snd $ B.splitAt 4 contents''
       let numberOfColumns = B.last $ fst $ B.splitAt 4 contents'''
